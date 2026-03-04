@@ -16,6 +16,7 @@ import io.element.android.libraries.core.extensions.mapFailure
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.auth.AuthenticationException
+import io.element.android.libraries.matrix.api.auth.ElementClassicSession
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.auth.MatrixHomeServerDetails
 import io.element.android.libraries.matrix.api.auth.OidcDetails
@@ -50,6 +51,7 @@ import org.matrix.rustcomponents.sdk.QrCodeData
 import org.matrix.rustcomponents.sdk.QrCodeDecodeException
 import org.matrix.rustcomponents.sdk.QrLoginProgress
 import org.matrix.rustcomponents.sdk.QrLoginProgressListener
+import org.matrix.rustcomponents.sdk.SecretsBundle
 import timber.log.Timber
 import uniffi.matrix_sdk.OAuthAuthorizationData
 import kotlin.time.Duration.Companion.seconds
@@ -64,6 +66,9 @@ class RustMatrixAuthenticationService(
     private val passphraseGenerator: PassphraseGenerator,
     private val oidcConfigurationProvider: OidcConfigurationProvider,
 ) : MatrixAuthenticationService {
+    // Any existing Element Classic session that we want to try to import secrets from during login.
+    private var elementClassicSession: ElementClassicSession? = null
+
     // Passphrase which will be used for new sessions. Existing sessions will use the passphrase
     // stored in the SessionData.
     private val pendingPassphrase = getDatabasePassphrase()
@@ -138,9 +143,19 @@ class RustMatrixAuthenticationService(
             runCatchingExceptions {
                 val client = currentClient ?: error("You need to call `setHomeserver()` first")
                 val currentSessionPaths = sessionPaths ?: error("You need to call `setHomeserver()` first")
-                client.login(username, password, "Element X Android", null)
+                client.login(
+                    username = username,
+                    password = password,
+                    initialDeviceName = "Element X Android",
+                    deviceId = null,
+                    // TODO Remove
+                    secretsBundle = elementClassicSession?.let {
+                        SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    },
+                )
                 // Ensure that the user is not already logged in with the same account
                 ensureNotAlreadyLoggedIn(client)
+                tryToImportSecretForElementClassicSession(client)
                 val sessionData = client.session()
                     .toSessionData(
                         isTokenValid = true,
@@ -161,6 +176,22 @@ class RustMatrixAuthenticationService(
                 failure.mapAuthenticationException()
             }
         }
+
+    private fun tryToImportSecretForElementClassicSession(client: Client) {
+        elementClassicSession
+            ?.takeIf {
+                it.userId.value == client.userId()
+            }?.let {
+                Timber.d("Trying to import secrets for Element Classic session ${it.userId}")
+                runCatchingExceptions {
+                    val secretsBundle = SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    // TODO Use new API
+                    //  client.import(secretsBundle)
+                }.onFailure { failure ->
+                    Timber.e(failure, "Failed to import secrets for Element Classic session ${it.userId}")
+                }
+            }
+    }
 
     override suspend fun importCreatedSession(externalSession: ExternalSession): Result<SessionId> =
         withContext(coroutineDispatchers.io) {
@@ -233,6 +264,10 @@ class RustMatrixAuthenticationService(
         }
     }
 
+    override fun setElementClassicSession(session: ElementClassicSession?) {
+        elementClassicSession = session
+    }
+
     /**
      * callbackUrl should be the uriRedirect from OidcClientMetadata (with all the parameters).
      */
@@ -241,14 +276,19 @@ class RustMatrixAuthenticationService(
             runCatchingExceptions {
                 val client = currentClient ?: error("You need to call `setHomeserver()` first")
                 val currentSessionPaths = sessionPaths ?: error("You need to call `setHomeserver()` first")
-                client.loginWithOidcCallback(callbackUrl)
-
+                client.loginWithOidcCallback(
+                    callbackUrl = callbackUrl,
+                    // TODO Remove
+                    secretsBundle = elementClassicSession?.let {
+                        SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    },
+                )
                 // Free the pending data since we won't use it to abort the flow anymore
                 pendingOAuthAuthorizationData?.close()
                 pendingOAuthAuthorizationData = null
-
                 // Ensure that the user is not already logged in with the same account
                 ensureNotAlreadyLoggedIn(client)
+                tryToImportSecretForElementClassicSession(client)
                 val sessionData = client.session().toSessionData(
                     isTokenValid = true,
                     loginType = LoginType.OIDC,

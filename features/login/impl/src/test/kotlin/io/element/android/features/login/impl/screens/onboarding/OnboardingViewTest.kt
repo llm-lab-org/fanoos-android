@@ -18,6 +18,7 @@ import io.element.android.features.login.impl.R
 import io.element.android.features.login.impl.login.LoginMode
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.auth.OidcDetails
+import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureNeverCalled
