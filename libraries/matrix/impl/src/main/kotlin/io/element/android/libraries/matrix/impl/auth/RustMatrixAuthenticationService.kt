@@ -51,7 +51,7 @@ import org.matrix.rustcomponents.sdk.QrCodeData
 import org.matrix.rustcomponents.sdk.QrCodeDecodeException
 import org.matrix.rustcomponents.sdk.QrLoginProgress
 import org.matrix.rustcomponents.sdk.QrLoginProgressListener
-import org.matrix.rustcomponents.sdk.SecretsBundle
+// import org.matrix.rustcomponents.sdk.SecretsBundle
 import timber.log.Timber
 import uniffi.matrix_sdk.OAuthAuthorizationData
 import kotlin.time.Duration.Companion.seconds
@@ -149,9 +149,9 @@ class RustMatrixAuthenticationService(
                     initialDeviceName = "Element X Android",
                     deviceId = null,
                     // TODO Remove
-                    secretsBundle = elementClassicSession?.let {
-                        SecretsBundle.fromStr(it.userId.value, it.secrets)
-                    },
+                    // secretsBundle = elementClassicSession?.let {
+                    //     SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    // },
                 )
                 // Ensure that the user is not already logged in with the same account
                 ensureNotAlreadyLoggedIn(client)
@@ -184,7 +184,7 @@ class RustMatrixAuthenticationService(
             }?.let {
                 Timber.d("Trying to import secrets for Element Classic session ${it.userId}")
                 runCatchingExceptions {
-                    val secretsBundle = SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    // val secretsBundle = SecretsBundle.fromStr(it.userId.value, it.secrets)
                     // TODO Use new API
                     //  client.import(secretsBundle)
                 }.onFailure { failure ->
@@ -279,9 +279,9 @@ class RustMatrixAuthenticationService(
                 client.loginWithOidcCallback(
                     callbackUrl = callbackUrl,
                     // TODO Remove
-                    secretsBundle = elementClassicSession?.let {
-                        SecretsBundle.fromStr(it.userId.value, it.secrets)
-                    },
+                    // secretsBundle = elementClassicSession?.let {
+                    //     SecretsBundle.fromStr(it.userId.value, it.secrets)
+                    // },
                 )
                 // Free the pending data since we won't use it to abort the flow anymore
                 pendingOAuthAuthorizationData?.close()
