@@ -8,11 +8,13 @@
 package io.element.android.features.login.impl.screens.loginwithclassic
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.Stable
 import io.element.android.features.login.impl.login.LoginMode
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.core.UserId
 
+@Stable
 data class LoginWithClassicState(
     val isElementPro: Boolean,
     val userId: UserId,
