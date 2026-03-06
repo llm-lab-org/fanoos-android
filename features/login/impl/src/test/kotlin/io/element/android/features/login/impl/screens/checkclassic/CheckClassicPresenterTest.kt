@@ -33,7 +33,7 @@ class CheckClassicPresenterTest {
     val warmUpRule = WarmUpRule()
 
     @Test
-    fun `present - initial state `() = runTest {
+    fun `present - initial state`() = runTest {
         val presenter = createPresenter()
         presenter.test {
             val initialState = awaitItem()
