@@ -51,7 +51,6 @@ import org.matrix.rustcomponents.sdk.QrCodeData
 import org.matrix.rustcomponents.sdk.QrCodeDecodeException
 import org.matrix.rustcomponents.sdk.QrLoginProgress
 import org.matrix.rustcomponents.sdk.QrLoginProgressListener
-// import org.matrix.rustcomponents.sdk.SecretsBundle
 import timber.log.Timber
 import uniffi.matrix_sdk.OAuthAuthorizationData
 import kotlin.time.Duration.Companion.seconds
@@ -181,16 +180,17 @@ class RustMatrixAuthenticationService(
         elementClassicSession
             ?.takeIf {
                 it.userId.value == client.userId()
-            }?.let {
-                Timber.d("Trying to import secrets for Element Classic session ${it.userId}")
-                runCatchingExceptions {
-                    // val secretsBundle = SecretsBundle.fromStr(it.userId.value, it.secrets)
-                    // TODO Use new API
-                    //  client.import(secretsBundle)
-                }.onFailure { failure ->
-                    Timber.e(failure, "Failed to import secrets for Element Classic session ${it.userId}")
-                }
             }
+        // ?.let {
+        //         Timber.d("Trying to import secrets for Element Classic session ${it.userId}")
+        //         runCatchingExceptions {
+        //             val secretsBundle = SecretsBundle.fromStr(it.userId.value, it.secrets)
+        //             // TODO Use new API
+        //             //  client.import(secretsBundle)
+        //         }.onFailure { failure ->
+        //             Timber.e(failure, "Failed to import secrets for Element Classic session ${it.userId}")
+        //         }
+        //     }
     }
 
     override suspend fun importCreatedSession(externalSession: ExternalSession): Result<SessionId> =

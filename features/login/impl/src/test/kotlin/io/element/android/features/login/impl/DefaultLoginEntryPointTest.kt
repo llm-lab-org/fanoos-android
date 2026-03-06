@@ -16,7 +16,6 @@ import io.element.android.features.enterprise.test.FakeEnterpriseService
 import io.element.android.features.login.api.LoginEntryPoint
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
 import io.element.android.features.login.impl.classic.FakeElementClassicConnection
-import io.element.android.libraries.featureflag.test.FakeFeatureFlagService
 import io.element.android.libraries.oidc.test.customtab.FakeOidcActionFlow
 import io.element.android.tests.testutils.lambda.lambdaError
 import io.element.android.tests.testutils.node.TestParentNode
@@ -42,7 +41,6 @@ class DefaultLoginEntryPointTest {
                 oidcActionFlow = FakeOidcActionFlow(),
                 appCoroutineScope = backgroundScope,
                 elementClassicConnection = FakeElementClassicConnection(),
-                featureFlagService = FakeFeatureFlagService(),
             )
         }
         val callback = object : LoginEntryPoint.Callback {
