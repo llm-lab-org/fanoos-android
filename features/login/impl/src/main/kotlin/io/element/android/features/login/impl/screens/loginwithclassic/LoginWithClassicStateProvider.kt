@@ -9,7 +9,6 @@ package io.element.android.features.login.impl.screens.loginwithclassic
 
 import android.graphics.Bitmap
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.core.graphics.createBitmap
 import io.element.android.features.login.impl.login.LoginMode
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
@@ -19,7 +18,6 @@ open class LoginWithClassicStateProvider : PreviewParameterProvider<LoginWithCla
     override val values: Sequence<LoginWithClassicState>
         get() = sequenceOf(
             aLoginWithClassicState(),
-            aLoginWithClassicState(displayName = "Alice", avatar = createBitmap(1, 1)),
             aLoginWithClassicState(isElementPro = true, displayName = "Alice"),
         )
 }
